@@ -22,15 +22,19 @@
 #ifndef nuts_bolts_h
 #define nuts_bolts_h
 
-#define false 0
-#define true 1
+#if !defined (false)
+  #define false 0
+#endif
+#if !defined (true)
+  #define true 1
+#endif
 
 // Axis array index values. Must start with 0 and be continuous.
-#define N_AXIS 3 // Number of axes
+#define N_AXIS 4 // Number of axes
 #define X_AXIS 0 // Axis indexing value. 
 #define Y_AXIS 1
 #define Z_AXIS 2
-// #define A_AXIS 3
+#define A_AXIS 3
 
 // CoreXY motor assignments. DO NOT ALTER.
 // NOTE: If the A and B motor axis bindings are changed, this effects the CoreXY equations.
@@ -51,11 +55,17 @@
 #define clear_vector(a) memset(a, 0, sizeof(a))
 #define clear_vector_float(a) memset(a, 0.0, sizeof(float)*N_AXIS)
 // #define clear_vector_long(a) memset(a, 0.0, sizeof(long)*N_AXIS)
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#define min(a,b) (((a) < (b)) ? (a) : (b))
+#if !defined (max)
+  #define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#if !defined (min)
+  #define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
 
 // Bit field and masking macros
-#define bit(n) (1 << n) 
+#if !defined (bit)
+  #define bit(n) (1 << n) 
+#endif
 #define bit_true(x,mask) (x) |= (mask)
 #define bit_false(x,mask) (x) &= ~(mask)
 #define bit_istrue(x,mask) ((x & mask) != 0)

@@ -1,3 +1,9 @@
+*** FORK
+
+.) ADDED A AXIES
+.) ADDED secound X AXIES for homing
+
+
 ![GitHub Logo](/doc/media/Grbl Logo 250px.png)
 
 

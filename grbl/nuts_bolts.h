@@ -35,6 +35,8 @@
 #define Y_AXIS 1
 #define Z_AXIS 2
 #define A_AXIS 3
+#define X1_AXIS 4 // Axis indexing value. 
+#define X2_AXIS 5 // Axis indexing value. 
 
 // CoreXY motor assignments. DO NOT ALTER.
 // NOTE: If the A and B motor axis bindings are changed, this effects the CoreXY equations.

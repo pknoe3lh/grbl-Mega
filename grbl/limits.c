@@ -147,21 +147,23 @@ uint8_t limits_get_state()
 void limits_go_home(uint8_t cycle_mask) 
 {
   if (sys.abort) { return; } // Block if system reset has been issued.
+  
+  if(cycle_mask&(1<<X_AXIS)) cycle_mask|=(1<<X1_AXIS)|(1<<X2_AXIS);
 
   // Initialize
   uint8_t n_cycle = (2*N_HOMING_LOCATE_CYCLE+1);
-  uint8_t step_pin[N_AXIS];
-  float target[N_AXIS];
+  uint8_t step_pin[N_AXIS+2];
+  float target[N_AXIS+2];
   float max_travel = 0.0;
   uint8_t idx;
-  for (idx=0; idx<N_AXIS; idx++) {  
+  for (idx=0; idx<N_AXIS+2; idx++) {  
     // Initialize step pin masks
     step_pin[idx] = get_step_pin_mask(idx);
     #ifdef COREXY    
       if ((idx==A_MOTOR)||(idx==B_MOTOR)) { step_pin[idx] = (get_step_pin_mask(X_AXIS)|get_step_pin_mask(Y_AXIS)); } 
     #endif
 
-    if (bit_istrue(cycle_mask,bit(idx))) { 
+    if (idx<N_AXIS && bit_istrue(cycle_mask,bit(idx))) { 
       // Set target based on max_travel setting. Ensure homing switches engaged with search scalar.
       // NOTE: settings.max_travel[] is stored as a negative value.
       max_travel = max(max_travel,(-HOMING_AXIS_SEARCH_SCALAR)*settings.max_travel[idx]);
@@ -180,10 +182,12 @@ void limits_go_home(uint8_t cycle_mask)
     // Initialize and declare variables needed for homing routine.
     axislock = 0;
     n_active_axis = 0;
-    for (idx=0; idx<N_AXIS; idx++) {
+    for (idx=0; idx<N_AXIS+2; idx++) {
       // Set target location for active axes and setup computation for homing rate.
       if (bit_istrue(cycle_mask,bit(idx))) {
-        n_active_axis++;
+        if(idx<N_AXIS) {
+          n_active_axis++; 
+        }
         sys.position[idx] = 0;
         // Set target direction based on cycle mask and homing cycle approach state.
         // NOTE: This happens to compile smaller than any other implementation tried.
@@ -213,7 +217,7 @@ void limits_go_home(uint8_t cycle_mask)
       if (approach) {
         // Check limit state. Lock out cycle axes when they change.
         limit_state = limits_get_state();
-        for (idx=0; idx<N_AXIS; idx++) {
+        for (idx=0; idx<N_AXIS+2; idx++) {
           if (axislock & step_pin[idx]) {
             if (limit_state & (1 << idx)) { axislock &= ~(step_pin[idx]); }
           }

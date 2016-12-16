@@ -36,28 +36,28 @@
   #define STEP_DDR      DDRA
   #define STEP_PORT     PORTA
   #define STEP_PIN      PINA
-  #define X1_STEP_BIT   2 // MEGA2560 Digital Pin 24
-  #define X2_STEP_BIT   3 // MEGA2560 Digital Pin 25
-  #define Y_STEP_BIT    4 // MEGA2560 Digital Pin 26
+  #define Y1_STEP_BIT   2 // MEGA2560 Digital Pin 24
+  #define Y2_STEP_BIT   3 // MEGA2560 Digital Pin 25
+  #define X_STEP_BIT    4 // MEGA2560 Digital Pin 26
   #define Z_STEP_BIT    5 // MEGA2560 Digital Pin 27
-  #define A_STEP_BIT    6 // MEGA2560 Digital Pin 28
-  #define STEP_MASK ((1<<X1_STEP_BIT)|(1<<X2_STEP_BIT)|(1<<Y_STEP_BIT)|(1<<Z_STEP_BIT)|(1<<A_STEP_BIT)) // All step bits
+  #define A_STEP_BIT    7 // MEGA2560 Digital Pin 28
+  #define STEP_MASK ((1<<X_STEP_BIT)|(1<<Y1_STEP_BIT)|(1<<Y2_STEP_BIT)|(1<<Z_STEP_BIT)|(1<<A_STEP_BIT)) // All step bits
 
   // Define step direction output pins. NOTE: All direction pins must be on the same port.
   #define DIRECTION_DDR     DDRC
   #define DIRECTION_PORT    PORTC
   #define DIRECTION_PIN     PINC
-  #define X1_DIRECTION_BIT  7 // MEGA2560 Digital Pin 30
-  #define X2_DIRECTION_BIT  6 // MEGA2560 Digital Pin 31
-  #define Y_DIRECTION_BIT   5 // MEGA2560 Digital Pin 32
+  #define Y1_DIRECTION_BIT  7 // MEGA2560 Digital Pin 30
+  #define Y2_DIRECTION_BIT  6 // MEGA2560 Digital Pin 31
+  #define X_DIRECTION_BIT   5 // MEGA2560 Digital Pin 32
   #define Z_DIRECTION_BIT   4 // MEGA2560 Digital Pin 33
   #define A_DIRECTION_BIT   3 // MEGA2560 Digital Pin 34
-  #define DIRECTION_MASK ((1<<X1_DIRECTION_BIT)|(1<<X2_DIRECTION_BIT)|(1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT)|(1<<A_DIRECTION_BIT)) // All direction bits
+  #define DIRECTION_MASK ((1<<X_DIRECTION_BIT)|(1<<Y1_DIRECTION_BIT)|(1<<Y2_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT)|(1<<A_DIRECTION_BIT)) // All direction bits
 
   // Define stepper driver enable/disable output pin.
-  #define STEPPERS_DISABLE_DDR   DDRH
-  #define STEPPERS_DISABLE_PORT  PORTH
-  #define STEPPERS_DISABLE_BIT   4 // MEGA2560 Digital Pin 7
+  #define STEPPERS_DISABLE_DDR   DDRG
+  #define STEPPERS_DISABLE_PORT  PORTG
+  #define STEPPERS_DISABLE_BIT   5 // MEGA2560 Digital Pin 4
   #define STEPPERS_DISABLE_MASK (1<<STEPPERS_DISABLE_BIT)
 
   // Define homing/hard limit switch input pins and limit interrupt vectors. 
@@ -65,14 +65,14 @@
   #define LIMIT_DDR       DDRB
   #define LIMIT_PORT      PORTB
   #define LIMIT_PIN       PINB
-  #define X1_LIMIT_BIT    4 // MEGA2560 Digital Pin 10
-  #define X2_LIMIT_BIT    5 // MEGA2560 Digital Pin 11
-  #define Y_LIMIT_BIT     6 // MEGA2560 Digital Pin 12
+  #define Y1_LIMIT_BIT    4 // MEGA2560 Digital Pin 10
+  #define Y2_LIMIT_BIT    5 // MEGA2560 Digital Pin 11
+  #define X_LIMIT_BIT     6 // MEGA2560 Digital Pin 12
   #define Z_LIMIT_BIT     7 // MEGA2560 Digital Pin 13
   #define LIMIT_INT       PCIE0  // Pin change interrupt enable pin
   #define LIMIT_INT_vect  PCINT0_vect 
   #define LIMIT_PCMSK     PCMSK0 // Pin change interrupt register
-  #define LIMIT_MASK ((1<<X1_LIMIT_BIT)|(1<<X2_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
+  #define LIMIT_MASK ((1<<X_LIMIT_BIT)|(1<<Y1_LIMIT_BIT)|(1<<Y2_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 
   // Define spindle enable and spindle direction output pins.
   #define SPINDLE_ENABLE_DDR      DDRH
@@ -98,7 +98,7 @@
   #define CONTROL_RESET_BIT         0  // MEGA2560 Analog Pin 8
   #define CONTROL_FEED_HOLD_BIT     1  // MEGA2560 Analog Pin 9
   #define CONTROL_CYCLE_START_BIT   2  // MEGA2560 Analog Pin 10
-  #define CONTROL_SAFETY_DOOR_BIT   3  // MEGA2560 Analog Pin 11
+  #define CONTROL_SAFETY_DOOR_BIT   4 // DISABELD 3 maybe use later ;-)  // MEGA2560 Analog Pin 11
   #define CONTROL_INT       PCIE2  // Pin change interrupt enable pin
   #define CONTROL_INT_vect  PCINT2_vect
   #define CONTROL_PCMSK     PCMSK2 // Pin change interrupt register

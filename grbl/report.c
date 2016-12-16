@@ -515,7 +515,7 @@ void report_realtime_status()
             ( BITFLAG_RT_STATUS_LIMIT_PINS| BITFLAG_RT_STATUS_PROBE_PIN | BITFLAG_RT_STATUS_CONTROL_PINS ))) {
         printPgmString(PSTR(",Pin:"));
         if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_LIMIT_PINS)) { 
-          print_unsigned_int8(limits_get_state(),2,N_AXIS);
+          print_unsigned_int8(limits_get_state(),2,N_AXIS+2);
         }
         printPgmString(PSTR("|"));
         if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_PROBE_PIN)) {
@@ -530,7 +530,7 @@ void report_realtime_status()
     #else
       if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_LIMIT_PINS)) {
         printPgmString(PSTR(",Lim:"));
-        print_unsigned_int8(limits_get_state(),2,N_AXIS);
+        print_unsigned_int8(limits_get_state(),2,N_AXIS+2);
       }
     #endif
   
@@ -613,7 +613,7 @@ void report_realtime_status()
     
     #ifdef REPORT_REALTIME_LINE_NUMBERS  
       // Report current line number
-      printPgmString(PSTR("|Ln:")); 
+      printPgmString(PSTR("|Ln:"));  
       int32_t ln=0;
       plan_block_t * pb = plan_get_current_block();
       if(pb != NULL) {
@@ -633,7 +633,7 @@ void report_realtime_status()
             ( BITFLAG_RT_STATUS_LIMIT_PINS| BITFLAG_RT_STATUS_PROBE_PIN | BITFLAG_RT_STATUS_CONTROL_PINS ))) {
         printPgmString(PSTR("|Pin:"));
         if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_LIMIT_PINS)) { 
-          print_unsigned_int8(limits_get_state(),2,N_AXIS);
+          print_unsigned_int8(limits_get_state(),2,N_AXIS+2);
         }
         printPgmString(PSTR(","));
         if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_PROBE_PIN)) {
@@ -648,7 +648,7 @@ void report_realtime_status()
     #else
       if (bit_istrue(settings.status_report_mask,BITFLAG_RT_STATUS_LIMIT_PINS)) {
         printPgmString(PSTR("|Lim:"));
-        print_unsigned_int8(limits_get_state(),2,N_AXIS);
+        print_unsigned_int8(limits_get_state(),2,N_AXIS+2);
       }
     #endif
   

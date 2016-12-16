@@ -76,7 +76,7 @@ uint8_t limits_get_state()
   if (bit_isfalse(settings.flags,BITFLAG_INVERT_LIMIT_PINS)) { pin ^= LIMIT_MASK; }
   if (pin) {  
     uint8_t idx;
-    for (idx=0; idx<N_AXIS; idx++) {
+    for (idx=0; idx<N_AXIS+2; idx++) {
       if (pin & get_limit_pin_mask(idx)) { limit_state |= (1 << idx); }
     }
   }
@@ -148,8 +148,7 @@ void limits_go_home(uint8_t cycle_mask)
 {
   if (sys.abort) { return; } // Block if system reset has been issued.
   
-  if(cycle_mask&(1<<X_AXIS)) cycle_mask|=(1<<X1_AXIS)|(1<<X2_AXIS);
-
+  if(cycle_mask&(1<<Y_AXIS)) cycle_mask|=(1<<Y1_AXIS)|(1<<Y2_AXIS);
   // Initialize
   uint8_t n_cycle = (2*N_HOMING_LOCATE_CYCLE+1);
   uint8_t step_pin[N_AXIS+2];
@@ -158,7 +157,10 @@ void limits_go_home(uint8_t cycle_mask)
   uint8_t idx;
   for (idx=0; idx<N_AXIS+2; idx++) {  
     // Initialize step pin masks
-    step_pin[idx] = get_step_pin_mask(idx);
+    if(idx==Y_AXIS)
+      step_pin[idx] = 0;
+    else
+      step_pin[idx] = get_step_pin_mask(idx);
     #ifdef COREXY    
       if ((idx==A_MOTOR)||(idx==B_MOTOR)) { step_pin[idx] = (get_step_pin_mask(X_AXIS)|get_step_pin_mask(Y_AXIS)); } 
     #endif
@@ -187,17 +189,17 @@ void limits_go_home(uint8_t cycle_mask)
       if (bit_istrue(cycle_mask,bit(idx))) {
         if(idx<N_AXIS) {
           n_active_axis++; 
+          sys.position[idx] = 0;
+          // Set target direction based on cycle mask and homing cycle approach state.
+          // NOTE: This happens to compile smaller than any other implementation tried.
+          if (bit_istrue(settings.homing_dir_mask,bit(idx))) {
+            if (approach) { target[idx] = -max_travel; }
+            else { target[idx] = max_travel; }
+          } else { 
+            if (approach) { target[idx] = max_travel; }
+            else { target[idx] = -max_travel; }
+          }        
         }
-        sys.position[idx] = 0;
-        // Set target direction based on cycle mask and homing cycle approach state.
-        // NOTE: This happens to compile smaller than any other implementation tried.
-        if (bit_istrue(settings.homing_dir_mask,bit(idx))) {
-          if (approach) { target[idx] = -max_travel; }
-          else { target[idx] = max_travel; }
-        } else { 
-          if (approach) { target[idx] = max_travel; }
-          else { target[idx] = -max_travel; }
-        }        
         // Apply axislock to the step port pins active in this cycle.
         axislock |= step_pin[idx];
       }

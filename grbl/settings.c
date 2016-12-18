@@ -319,7 +319,7 @@ uint8_t get_direction_pin_mask(uint8_t axis_idx)
 {
   if ( axis_idx == X_AXIS ) { return((1<<X_DIRECTION_BIT)); }
   if ( axis_idx == Y_AXIS ) { return((1<<Y1_DIRECTION_BIT)|(1<<Y2_DIRECTION_BIT)); }
-  if ( axis_idx == A_AXIS ) { return((1<<A_DIRECTION_BIT)); }
+  if ( axis_idx == A_AXIS ) { return((1<<A_DIRECTION_BIT)); } //has no direction but is needed for internal computation :-(
   return((1<<Z_DIRECTION_BIT));
 }
 
@@ -331,6 +331,6 @@ uint8_t get_limit_pin_mask(uint8_t axis_idx)
   if ( axis_idx == Y_AXIS ) { return((1<<Y1_LIMIT_BIT)|(1<<Y2_LIMIT_BIT)); }
   if ( axis_idx == Y1_AXIS ) { return((1<<Y1_LIMIT_BIT)); }
   if ( axis_idx == Y2_AXIS ) { return((1<<Y2_LIMIT_BIT)); }
-  //A and Z Limit switch is the same! => A don't need a limit switch!
+  if ( axis_idx == A_AXIS ) { return 0; }//A don't need a limit switch!
   return((1<<Z_LIMIT_BIT));
 }

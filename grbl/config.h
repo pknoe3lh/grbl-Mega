@@ -72,9 +72,9 @@
 // on separate pin, but homed in one cycle. Also, it should be noted that the function of hard limits 
 // will not be affected by pin sharing.
 // NOTE: Defaults are set for a traditional 3-axis CNC machine. Z-axis first to clear, followed by X & Y.
-#define HOMING_CYCLE_0 (1<<X_AXIS)                // REQUIRED: First move Z to clear workspace.
-#define HOMING_CYCLE_1 (1<<Y_AXIS)  // OPTIONAL: Then move X,Y at the same time.
-// #define HOMING_CYCLE_2   (1<<Z_AXIS)          // OPTIONAL: Uncomment and add axes mask to enable
+#define HOMING_CYCLE_0 (1<<Z_AXIS)                // REQUIRED: First move Z to clear workspace.
+#define HOMING_CYCLE_1 (1<<X_AXIS)  // OPTIONAL: Then move X,Y at the same time.
+#define HOMING_CYCLE_2   (1<<Y_AXIS)          // OPTIONAL: Uncomment and add axes mask to enable
 
 // Number of homing cycles performed after when the machine initially jogs to limit switches.
 // This help in preventing overshoot and should improve repeatability. This value should be one or 
@@ -289,17 +289,6 @@
 // run-time command executions, like status reports, since these are performed between each dwell 
 // time step. Also, keep in mind that the Arduino delay timer is not very accurate for long delays.
 #define DWELL_TIME_STEP 50 // Integer (1-255) (milliseconds)
-
-// Creates a delay between the direction pin setting and corresponding step pulse by creating
-// another interrupt (Timer2 compare) to manage it. The main Grbl interrupt (Timer1 compare) 
-// sets the direction pins, and does not immediately set the stepper pins, as it would in 
-// normal operation. The Timer2 compare fires next to set the stepper pins after the step 
-// pulse delay time, and Timer2 overflow will complete the step pulse, except now delayed 
-// by the step pulse time plus the step pulse delay. (Thanks langwadt for the idea!)
-// NOTE: Uncomment to enable. The recommended delay must be > 3us, and, when added with the
-// user-supplied step pulse time, the total time must not exceed 127us. Reported successful
-// values for certain setups have ranged from 5 to 20us.
-// #define STEP_PULSE_DELAY 10 // Step pulse delay in microseconds. Default disabled.
 
 // The number of linear motions in the planner buffer to be planned at any give time. The vast
 // majority of RAM that Grbl uses is based on this buffer size. Only increase if there is extra 

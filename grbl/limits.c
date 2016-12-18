@@ -319,7 +319,7 @@ void limits_go_home(uint8_t cycle_mask)
 void limits_soft_check(float *target)
 {
   uint8_t idx;
-  for (idx=0; idx<N_AXIS; idx++) {
+  for (idx=0; idx<N_AXIS-1; idx++) { //A has no limits
    
     #ifdef HOMING_FORCE_SET_ORIGIN
       // When homing forced set origin is enabled, soft limits checks need to account for directionality.

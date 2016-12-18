@@ -592,11 +592,15 @@ uint8_t gc_execute_line(char *line)
               // NOTE: G53 is never active with G28/30 since they are in the same modal group.
               if (gc_block.non_modal_command != NON_MODAL_ABSOLUTE_OVERRIDE) {
                 // Apply coordinate offsets based on distance mode.
-                if (gc_block.modal.distance == DISTANCE_MODE_ABSOLUTE) {
+                if (gc_block.modal.distance == DISTANCE_MODE_ABSOLUTE && idx!=A_AXIS) { //A is always Relative
                   gc_block.values.xyz[idx] += coordinate_data[idx] + gc_state.coord_offset[idx];
                   if (idx == TOOL_LENGTH_OFFSET_AXIS) { gc_block.values.xyz[idx] += gc_state.tool_length_offset; }
                 } else {  // Incremental mode
-                  gc_block.values.xyz[idx] += gc_state.position[idx];
+                if(idx==A_AXIS){ //Late A absolute position not get too big ;-)
+                    if(gc_block.values.xyz[idx]<0) gc_block.values.xyz[idx]=0-gc_block.values.xyz[idx];
+                    if(gc_state.position[idx]>gc_block.values.xyz[idx])  gc_block.values.xyz[idx]=0-gc_block.values.xyz[idx];
+                  }
+                  gc_block.values.xyz[idx] += gc_state.position[idx]; 
                 }
               }
             }

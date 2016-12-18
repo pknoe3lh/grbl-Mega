@@ -315,6 +315,8 @@ uint8_t plan_buffer_line(float *target, float feed_rate, uint8_t invert_feed_rat
     // Set direction bits. Bit enabled always means direction is negative.
     if (delta_mm < 0 ) { block->direction_bits |= get_direction_pin_mask(idx); }
     
+    if(idx==N_AXIS && delta_mm < 0) unit_vec[idx]=0-unit_vec[idx];
+    
     // Incrementally compute total move distance by Euclidean norm. First add square of each term.
     block->millimeters += delta_mm*delta_mm;
   }

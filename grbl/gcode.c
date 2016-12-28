@@ -108,6 +108,8 @@ uint8_t gc_execute_line(char *line)
   float value;
   uint8_t int_value = 0;
   uint16_t mantissa = 0;
+  
+  gc_block.values.xyz[A_AXIS]=0; //Reset A
 
   while (line[char_counter] != 0) { // Loop until no more g-code words in line.
     
@@ -479,7 +481,7 @@ uint8_t gc_execute_line(char *line)
   // Pre-convert XYZ coordinate values to millimeters, if applicable.
   uint8_t idx;
   if (gc_block.modal.units == UNITS_MODE_INCHES) {
-    for (idx=0; idx<N_AXIS; idx++) { // Axes indices are consistent, so loop may be used.
+    for (idx=0; idx<N_AXIS-1; idx++) { // Axes indices are consistent, so loop may be used.
       if (bit_istrue(axis_words,bit(idx)) ) {
         gc_block.values.xyz[idx] *= MM_PER_INCH;
       }
@@ -546,7 +548,7 @@ uint8_t gc_execute_line(char *line)
       if (!settings_read_coord_data(coord_select,parameter_data)) { FAIL(STATUS_SETTING_READ_FAIL); } // [EEPROM read fail]
     
       // Pre-calculate the coordinate data changes. NOTE: Uses parameter_data since coordinate_data may be in use by G54-59.
-      for (idx=0; idx<N_AXIS; idx++) { // Axes indices are consistent, so loop may be used.
+      for (idx=0; idx<N_AXIS-1; idx++) { // Axes indices are consistent, so loop may be used.
         // Update axes defined only in block. Always in machine coordinates. Can change non-active system.
         if (bit_istrue(axis_words,bit(idx)) ) {
           if (gc_block.values.l == 20) {
@@ -566,7 +568,7 @@ uint8_t gc_execute_line(char *line)
     
       // Update axes defined only in block. Offsets current system to defined value. Does not update when
       // active coordinate system is selected, but is still active unless G92.1 disables it. 
-      for (idx=0; idx<N_AXIS; idx++) { // Axes indices are consistent, so loop may be used.
+      for (idx=0; idx<N_AXIS-1; idx++) { // Axes indices are consistent, so loop may be used.
         if (bit_istrue(axis_words,bit(idx)) ) {
           gc_block.values.xyz[idx] = gc_state.position[idx]-coordinate_data[idx]-gc_block.values.xyz[idx];
           if (idx == TOOL_LENGTH_OFFSET_AXIS) { gc_block.values.xyz[idx] -= gc_state.tool_length_offset; }
@@ -584,7 +586,7 @@ uint8_t gc_execute_line(char *line)
       // NOTE: Tool offsets may be appended to these conversions when/if this feature is added.
       if (axis_command != AXIS_COMMAND_TOOL_LENGTH_OFFSET ) { // TLO block any axis command.
         if (axis_words) {
-          for (idx=0; idx<N_AXIS; idx++) { // Axes indices are consistent, so loop may be used to save flash space.
+          for (idx=0; idx<N_AXIS-1; idx++) { // Axes indices are consistent, so loop may be used to save flash space.
             if ( bit_isfalse(axis_words,bit(idx)) ) {
               gc_block.values.xyz[idx] = gc_state.position[idx]; // No axis word in block. Keep same axis position.
             } else {
@@ -621,7 +623,7 @@ uint8_t gc_execute_line(char *line)
           }
           if (axis_words) { 
             // Move only the axes specified in secondary move.
-            for (idx=0; idx<N_AXIS; idx++) {
+            for (idx=0; idx<N_AXIS-1; idx++) {
               if (!(axis_words & (1<<idx))) { parameter_data[idx] = gc_state.position[idx]; }
             }
           } else {
@@ -789,7 +791,7 @@ uint8_t gc_execute_line(char *line)
           
             // Convert IJK values to proper units.
             if (gc_block.modal.units == UNITS_MODE_INCHES) {
-              for (idx=0; idx<N_AXIS; idx++) { // Axes indices are consistent, so loop may be used to save flash space.
+              for (idx=0; idx<N_AXIS-1; idx++) { // Axes indices are consistent, so loop may be used to save flash space.
                 if (ijk_words & bit(idx)) { gc_block.values.ijk[idx] *= MM_PER_INCH; }
               }
             }         

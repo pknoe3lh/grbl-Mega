@@ -287,7 +287,7 @@ uint8_t plan_buffer_line(float *target, float feed_rate, uint8_t invert_feed_rat
     block->steps[B_MOTOR] = labs((target_steps[X_AXIS]-position_steps[X_AXIS]) - (target_steps[Y_AXIS]-position_steps[Y_AXIS]));
   #endif
 
-  for (idx=0; idx<N_AXIS; idx++) {
+  for (idx=0; idx<N_AXIS-1; idx++) { //Calc A seperatly
     // Calculate target position in absolute steps, number of steps for each axis, and determine max step events.
     // Also, compute individual axes distance for move and prep unit vector calculations.
     // NOTE: Computes true distance from converted step values.
@@ -314,16 +314,22 @@ uint8_t plan_buffer_line(float *target, float feed_rate, uint8_t invert_feed_rat
         
     // Set direction bits. Bit enabled always means direction is negative.
     if (delta_mm < 0 ) { block->direction_bits |= get_direction_pin_mask(idx); }
-    
-    if(idx==N_AXIS && delta_mm < 0) unit_vec[idx]=0-unit_vec[idx];
-    
+        
     // Incrementally compute total move distance by Euclidean norm. First add square of each term.
     block->millimeters += delta_mm*delta_mm;
   }
+
   block->millimeters = sqrt(block->millimeters); // Complete millimeters calculation with sqrt()
-  
+
   // Bail if this is a zero-length block. Highly unlikely to occur.
   if (block->step_event_count == 0) { return(PLAN_EMPTY_BLOCK); } 
+
+  //Calc A seperatly
+  block->steps[A_AXIS] = lround(target[A_AXIS]*settings.steps_per_mm[A_AXIS]);
+  block->step_event_count = max(block->step_event_count, block->steps[A_AXIS]);
+  unit_vec[A_AXIS] = target[A_AXIS]; // Store unit vector numerator. Denominator computed later.
+
+  
   
   // Adjust feed_rate value to mm/min depending on type of rate input (normal, inverse time, or rapids)
   if (feed_rate < 0) { feed_rate = SOME_LARGE_VALUE; } // Scaled down to absolute max/rapids rate later
@@ -338,7 +344,7 @@ uint8_t plan_buffer_line(float *target, float feed_rate, uint8_t invert_feed_rat
   float inverse_millimeters = 1.0/block->millimeters;  // Inverse millimeters to remove multiple float divides	
   float junction_cos_theta = 0.0;
   float magnitude_junction_vec = 0.0;
-  for (idx=0; idx<N_AXIS; idx++) {
+  for (idx=0; idx<N_AXIS-1; idx++) { //Calc A seperatly
     if (unit_vec[idx] != 0) {  // Avoid divide by zero.
       unit_vec[idx] *= inverse_millimeters;  // Complete unit vector calculation
 
@@ -355,6 +361,13 @@ uint8_t plan_buffer_line(float *target, float feed_rate, uint8_t invert_feed_rat
     junction_vec[idx] = unit_vec[idx]-pl.previous_unit_vec[idx];
     magnitude_junction_vec += junction_vec[idx]*junction_vec[idx];
   }
+  
+  //Calc A seperatly
+  if (unit_vec[A_AXIS] != 0) {  // Avoid divide by zero.
+    unit_vec[A_AXIS] *= inverse_millimeters;  // Complete unit vector calculation
+    feed_rate = min(feed_rate,fabs(settings.max_rate[A_AXIS]/unit_vec[A_AXIS]));
+  }
+  
 
   // TODO: Need to check this method handling zero junction speeds when starting from rest.
   if ((block_buffer_head == block_buffer_tail) || is_parking_motion) {
@@ -400,7 +413,7 @@ uint8_t plan_buffer_line(float *target, float feed_rate, uint8_t invert_feed_rat
       } else {
         float junction_acceleration = SOME_LARGE_VALUE;
         magnitude_junction_vec = sqrt(magnitude_junction_vec); // Complete magnitude calculation.
-        for (idx=0; idx<N_AXIS; idx++) {
+        for (idx=0; idx<N_AXIS-1; idx++) {
           if (junction_vec[idx] != 0) {  // Avoid divide by zero.
             junction_acceleration = min( junction_acceleration,
                   fabs((settings.acceleration[idx]*magnitude_junction_vec)/junction_vec[idx]) );

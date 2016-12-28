@@ -349,7 +349,7 @@ ISR(TIMER1_COMPA_vect)
   st.step_outbits = 0; 
 
   // Execute step displacement profile by Bresenham line algorithm
-  for (idx=0; idx<N_AXIS; idx++){
+  for (idx=0; idx<N_AXIS-1; idx++){
     #ifdef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
       st.counter[idx] += st.steps[idx];
     #else
@@ -361,6 +361,17 @@ ISR(TIMER1_COMPA_vect)
       if (st.exec_block->direction_bits & get_direction_pin_mask(idx)) { sys.position[idx]--; }
       else { sys.position[idx]++; }
     }
+  }
+  
+  //Calc A Seperatly
+  #ifdef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
+    st.counter[A_AXIS] += st.steps[A_AXIS];
+  #else
+    st.counter[A_AXIS] += st.exec_block->steps[A_AXIS];
+  #endif  
+  if (st.counter[A_AXIS] > st.exec_block->step_event_count) {
+    st.step_outbits |= get_step_pin_mask(A_AXIS);
+    st.counter[A_AXIS] -= st.exec_block->step_event_count;
   }
 
   // During a homing cycle, lock out and prevent desired axes from moving.

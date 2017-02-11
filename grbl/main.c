@@ -24,10 +24,11 @@
 
 // Declare system global variable structure
 system_t sys; 
+volatile uint8_t sys_probe_state;
+volatile uint8_t sys_rt_exec_state;
+volatile uint8_t sys_rt_exec_alarm;
 
-
-int main(void)
-{
+void setup() {
   // Initialize system upon power-up.
   serial_init();   // Setup serial baud rate and interrupts
   settings_init(); // Load Grbl settings from EEPROM
@@ -36,7 +37,6 @@ int main(void)
   
   memset(&sys, 0, sizeof(system_t));  // Clear all system variables
   sys.abort = true;   // Set abort to complete initialization
-  sei(); // Enable interrupts
 
   // Check for power-up and set system alarm if homing is enabled to force homing cycle
   // by setting Grbl's alarm state. Alarm locks out all g-code commands, including the
@@ -53,6 +53,12 @@ int main(void)
   #ifdef FORCE_INITIALIZATION_ALARM
     sys.state = STATE_ALARM;
   #endif
+
+}
+
+
+void loop() 
+{
   
   // Grbl initialization loop upon power-up or a system abort. For the latter, all processes
   // will return to this loop to be cleanly re-initialized.
@@ -88,5 +94,4 @@ int main(void)
     protocol_main_loop();
     
   }
-  return 0;   /* Never reached */
 }

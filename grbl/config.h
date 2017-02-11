@@ -34,8 +34,8 @@
 // NOTE: OEMs can avoid the need to maintain/update the defaults.h and cpu_map.h files and use only
 // one configuration file by placing their specific defaults and pin map at the bottom of this file.
 // If doing so, simply comment out these two defines and see instructions below.
-#define DEFAULTS_GENERIC
-#define CPU_MAP_2560_INITIAL
+#define DEFAULTS_LASER
+#define CPU_MAP_DUE_INITIAL
 
 // Serial baud rate
 #define BAUD_RATE 115200
@@ -144,14 +144,6 @@
 // #define INVERT_CONTROL_PIN_MASK CONTROL_MASK // Default disabled. Uncomment to disable.
 // #define INVERT_CONTROL_PIN_MASK (1<<CONTROL_SAFETY_DOOR_BIT) // Default disabled.
 
-// Inverts select limit pin states based on the following mask. This effects all limit pin functions, 
-// such as hard limits and homing. However, this is different from overall invert limits setting. 
-// This build option will invert only the limit pins defined here, and then the invert limits setting
-// will be applied to all of them. This is useful when a user has a mixed set of limit pins with both
-// normally-open(NO) and normally-closed(NC) switches installed on their machine.
-// NOTE: PLEASE DO NOT USE THIS, unless you have a situation that needs it.
-// #define INVERT_LIMIT_PIN_MASK ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)) // Default disabled.
-
 // Inverts the spindle enable pin from low-disabled/high-enabled to low-enabled/high-disabled. Useful
 // for some pre-built electronic boards.
 // NOTE: If VARIABLE_SPINDLE is enabled(default), this option has no effect as the PWM output and 
@@ -201,12 +193,6 @@
 // certain the step segment buffer is increased/decreased to account for these changes.
 #define ACCELERATION_TICKS_PER_SECOND 100 
 
-// Adaptive Multi-Axis Step Smoothing (AMASS) is an advanced feature that does what its name implies, 
-// smoothing the stepping of multi-axis motions. This feature smooths motion particularly at low step
-// frequencies below 10kHz, where the aliasing between axes of multi-axis motions can cause audible 
-// noise and shake your machine. At even lower step frequencies, AMASS adapts and provides even better
-// step smoothing. See stepper.c for more details on the AMASS system works.
-#define ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING  // Default enabled. Comment to disable.
 
 // Sets the maximum step rate allowed to be written as a Grbl setting. This option enables an error 
 // check in the settings module to prevent settings values that will exceed this limitation. The maximum
@@ -315,51 +301,12 @@
 // we know how much extra memory space we can re-invest into this.
 // #define LINE_BUFFER_SIZE 256  // Uncomment to override default in protocol.h
   
-// Serial send and receive buffer size. The receive buffer is often used as another streaming
-// buffer to store incoming blocks to be processed by Grbl when its ready. Most streaming
-// interfaces will character count and track each block send to each block response. So, 
-// increase the receive buffer if a deeper receive buffer is needed for streaming and avaiable
-// memory allows. The send buffer primarily handles messages in Grbl. Only increase if large
-// messages are sent and Grbl begins to stall, waiting to send the rest of the message.
-// NOTE: Buffer size values must be greater than zero and less than 256.
-// #define RX_BUFFER_SIZE 256 // Uncomment to override defaults in serial.h
-// #define TX_BUFFER_SIZE 128
-
 // The maximum line length of a data string stored in EEPROM. Used by startup lines and build
 // info. This size differs from the LINE_BUFFER_SIZE as the EEPROM is usually limited in size.
 // NOTE: Be very careful when changing this value. Check EEPROM address locations to make sure
 // these string storage locations won't corrupt one another.
 // #define EEPROM_LINE_SIZE 80 // Uncomment to override defaults in settings.h
   
-// Toggles XON/XOFF software flow control for serial communications. Not officially supported
-// due to problems involving the Atmega8U2 USB-to-serial chips on current Arduinos. The firmware
-// on these chips do not support XON/XOFF flow control characters and the intermediate buffer 
-// in the chips cause latency and overflow problems with standard terminal programs. However, 
-// using specifically-programmed UI's to manage this latency problem has been confirmed to work.
-// As well as, older FTDI FT232RL-based Arduinos(Duemilanove) are known to work with standard
-// terminal programs since their firmware correctly manage these XON/XOFF characters. In any
-// case, please report any successes to grbl administrators!
-// #define ENABLE_XONXOFF // Default disabled. Uncomment to enable.
-
-// A simple software debouncing feature for hard limit switches. When enabled, the interrupt 
-// monitoring the hard limit switch pins will enable the Arduino's watchdog timer to re-check 
-// the limit pin state after a delay of about 32msec. This can help with CNC machines with 
-// problematic false triggering of their hard limit switches, but it WILL NOT fix issues with 
-// electrical interference on the signal cables from external sources. It's recommended to first
-// use shielded signal cables with their shielding connected to ground (old USB/computer cables 
-// work well and are cheap to find) and wire in a low-pass circuit into each limit pin.
-// #define ENABLE_SOFTWARE_DEBOUNCE // Default disabled. Uncomment to enable.
-
-// Force Grbl to check the state of the hard limit switches when the processor detects a pin
-// change inside the hard limit ISR routine. By default, Grbl will trigger the hard limits
-// alarm upon any pin change, since bouncing switches can cause a state check like this to 
-// misread the pin. When hard limits are triggered, they should be 100% reliable, which is the
-// reason that this option is disabled by default. Only if your system/electronics can guarantee
-// that the switches don't bounce, we recommend enabling this option. This will help prevent
-// triggering a hard limit when the machine disengages from the switch.
-// NOTE: This option has no effect if SOFTWARE_DEBOUNCE is enabled.
-// #define HARD_LIMIT_FORCE_STATE_CHECK // Default disabled. Uncomment to enable.
-
 // Adjusts homing cycle search and locate scalars. These are the multipliers used by Grbl's
 // homing cycle to ensure the limit switches are engaged and cleared through each phase of 
 // the cycle. The search phase uses the axes max-travel setting times the SEARCH_SCALAR to

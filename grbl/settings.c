@@ -283,9 +283,9 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
 // Initialize the config subsystem
 void settings_init() {
   if(!read_global_settings()) {
-    report_status_message(STATUS_SETTING_READ_FAIL);
+    //report_status_message(STATUS_SETTING_READ_FAIL);
     settings_restore(SETTINGS_RESTORE_ALL); // Force restore all EEPROM data.
-    report_grbl_settings();
+    //report_grbl_settings();
   }
 
   // NOTE: Checking paramater data, startup lines, and build info string should be done here, 
@@ -305,32 +305,32 @@ void settings_init() {
 // Returns step pin mask according to Grbl internal axis indexing.
 uint8_t get_step_pin_mask(uint8_t axis_idx)
 {
-  if ( axis_idx == X_AXIS ) { return((1<<X_STEP_BIT)); }
-  if ( axis_idx == Y_AXIS ) { return((1<<Y1_STEP_BIT)|(1<<Y2_STEP_BIT)); }
-  if ( axis_idx == Y1_AXIS ) { return((1<<Y1_STEP_BIT)); }
-  if ( axis_idx == Y2_AXIS ) { return((1<<Y2_STEP_BIT)); }
-  if ( axis_idx == A_AXIS ) { return((1<<A_STEP_BIT)); }
-  return((1<<Z_STEP_BIT));
+  if ( axis_idx == X_AXIS ) { return((1<<X_AXIS)); }
+  if ( axis_idx == Y_AXIS ) { return((1<<Y1_AXIS)|(1<<Y2_AXIS)); }
+  if ( axis_idx == Y1_AXIS ) { return((1<<Y1_AXIS)); }
+  if ( axis_idx == Y2_AXIS ) { return((1<<Y2_AXIS)); }
+  if ( axis_idx == A_AXIS ) { return((1<<A_AXIS)); }
+  return((1<<Z_AXIS));
 }
 
 
 // Returns direction pin mask according to Grbl internal axis indexing.
 uint8_t get_direction_pin_mask(uint8_t axis_idx)
 {
-  if ( axis_idx == X_AXIS ) { return((1<<X_DIRECTION_BIT)); }
-  if ( axis_idx == Y_AXIS ) { return((1<<Y1_DIRECTION_BIT)|(1<<Y2_DIRECTION_BIT)); }
-  if ( axis_idx == A_AXIS ) { return((1<<A_DIRECTION_BIT)); } //has no direction but is needed for internal computation :-(
-  return((1<<Z_DIRECTION_BIT));
+  if ( axis_idx == X_AXIS ) { return((1<<X_AXIS)); }
+  if ( axis_idx == Y_AXIS ) { return((1<<Y1_AXIS)|(1<<Y2_AXIS)); }
+  if ( axis_idx == A_AXIS ) { return((1<<A_AXIS)); } //has no direction but is needed for internal computation :-(
+  return((1<<Z_AXIS));
 }
 
 
 // Returns limit pin mask according to Grbl internal axis indexing.
 uint8_t get_limit_pin_mask(uint8_t axis_idx)
 {
-  if ( axis_idx == X_AXIS ) { return((1<<X_LIMIT_BIT)); }
-  if ( axis_idx == Y_AXIS ) { return((1<<Y1_LIMIT_BIT)|(1<<Y2_LIMIT_BIT)); }
-  if ( axis_idx == Y1_AXIS ) { return((1<<Y1_LIMIT_BIT)); }
-  if ( axis_idx == Y2_AXIS ) { return((1<<Y2_LIMIT_BIT)); }
+  if ( axis_idx == X_AXIS ) { return((1<<X_AXIS)); }
+  if ( axis_idx == Y_AXIS ) { return((1<<Y1_AXIS)|(1<<Y2_AXIS)); }
+  if ( axis_idx == Y1_AXIS ) { return((1<<Y1_AXIS)); }
+  if ( axis_idx == Y2_AXIS ) { return((1<<Y2_AXIS)); }
   if ( axis_idx == A_AXIS ) { return 0; }//A don't need a limit switch!
-  return((1<<Z_LIMIT_BIT));
+  return((1<<Z_AXIS));
 }

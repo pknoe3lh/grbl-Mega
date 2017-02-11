@@ -29,19 +29,22 @@ volatile uint8_t sleep_counter;
 
 // Initialize sleep counters and enable timer.
 static void sleep_enable() { 
+/*
   sleep_counter = 0; // Reset sleep counter
   TCNT3 = 0;  // Reset timer3 counter register
   TIMSK3 |= (1<<TOIE3); // Enable timer3 overflow interrupt
+*/
 } 
 
-
+/*
 // Disable sleep timer.
 static void sleep_disable() {  TIMSK3 &= ~(1<<TOIE3); } // Disable timer overflow interrupt
-
+*/
 
 // Initialization routine for sleep timer.
 void sleep_init()
 {
+  /*
   // Configure Timer 3: Sleep Counter Overflow Interrupt
   // NOTE: By using an overflow interrupt, the timer is automatically reloaded upon overflow.
   TCCR3B = 0; // Normal operation. Overflow.
@@ -52,13 +55,14 @@ void sleep_init()
   TCCR3B |= (1<<CS31)|(1<<CS30); // Enable timer with 1/64 prescaler. ~66.8sec max with uint8 and 0.262sec/tick
   // TCCR3B |= (1<<CS32)|(1<<CS30); // Enable timer with 1/1024 prescaler. ~17.8min max with uint8 and 4.19sec/tick
   sleep_disable();
+  */
 }
 
-
+/*
 // Increment sleep counter with each timer overflow.
 ISR(TIMER3_OVF_vect) { sleep_counter++; }
-
-
+*/
+/*
 // Starts sleep timer if running conditions are satified. When elaped, sleep mode is executed.
 static void sleep_execute()
 {
@@ -83,7 +87,7 @@ static void sleep_execute()
   report_feedback_message(MESSAGE_SLEEP_MODE);
   system_set_exec_state_flag(EXEC_SLEEP);
 }
-
+*/
 
 // Checks running conditions for sleep. If satisfied, enables sleep countdown and executes
 // sleep mode upon elapse.
@@ -91,6 +95,8 @@ static void sleep_execute()
 // Hence, make sure any valid running state that executes the sleep timer is not one that is moving.
 void sleep_check()
 {
+  return;
+  /*
   // The sleep execution feature will continue only if the machine is in an IDLE or HOLD state and
   // has any powered components enabled.
   // NOTE: With overrides or in laser mode, modal spindle and coolant state are not guaranteed. Need 
@@ -104,4 +110,5 @@ void sleep_check()
       sleep_execute();
     }
   }
+  */
 }  

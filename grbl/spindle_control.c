@@ -24,6 +24,7 @@
 
 void spindle_init()
 {    
+/*
   // Configure variable spindle PWM and enable pin, if required.
   SPINDLE_PWM_DDR |= (1<<SPINDLE_PWM_BIT); // Configure as PWM output pin.
   SPINDLE_TCCRA_REGISTER = SPINDLE_TCCRA_INIT_MASK; // Configure PWM output compare timer
@@ -33,11 +34,13 @@ void spindle_init()
   SPINDLE_DIRECTION_DDR |= (1<<SPINDLE_DIRECTION_BIT); // Configure as output pin.
 
   spindle_stop();
+  */
 }
 
 
 uint8_t spindle_is_enabled()
 {
+/*  
   #ifdef INVERT_SPINDLE_ENABLE_PIN
     if ((SPINDLE_ENABLE_PORT) & (1<<SPINDLE_ENABLE_BIT)) { return(true); }
     else { return(false); }
@@ -45,22 +48,27 @@ uint8_t spindle_is_enabled()
     if ((SPINDLE_ENABLE_PORT) & (1<<SPINDLE_ENABLE_BIT)) { return(false); }
     else { return(true); }
   #endif
+*/
+  return false;
 }
 
 
 void spindle_stop()
 {
+/*
   SPINDLE_TCCRA_REGISTER &= ~(1<<SPINDLE_COMB_BIT); // Disable PWM. Output voltage is zero.
   #ifdef INVERT_SPINDLE_ENABLE_PIN
     SPINDLE_ENABLE_PORT |= (1<<SPINDLE_ENABLE_BIT);  // Set pin to high
   #else
     SPINDLE_ENABLE_PORT &= ~(1<<SPINDLE_ENABLE_BIT); // Set pin to low
   #endif
+*/
 }
 
 
 void spindle_set_state(uint8_t state, float rpm)
 {
+/*
   if (sys.abort) { return; } // Block during abort.
   
   // Halt or set spindle direction and rpm. 
@@ -107,12 +115,15 @@ void spindle_set_state(uint8_t state, float rpm)
     }
   
   }
+*/
 }
 
 
 void spindle_run(uint8_t state, float rpm)
 {
+/*
   if (sys.state == STATE_CHECK_MODE) { return; }
   protocol_buffer_synchronize(); // Empty planner buffer to ensure spindle is set when programmed.  
   spindle_set_state(state, rpm);
+*/
 }

@@ -38,6 +38,11 @@
 #define Y2_AXIS 4 // Axis indexing value. 
 #define Y1_AXIS 5 // Axis indexing value. 
 
+#define STEP_MASK ((1<<X_AXIS)|(1<<Y1_AXIS)|(1<<Y2_AXIS)|(1<<Z_AXIS)|(1<<A_AXIS)) // All step bits
+#define STEP_MASK_WOA ((1<<X_AXIS)|(1<<Y1_AXIS)|(1<<Y2_AXIS)|(1<<Z_AXIS)) // All step bits
+
+#define PROBE_MASK 1
+
 // CoreXY motor assignments. DO NOT ALTER.
 // NOTE: If the A and B motor axis bindings are changed, this effects the CoreXY equations.
 #ifdef COREXY

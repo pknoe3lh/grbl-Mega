@@ -1,20 +1,16 @@
 /*
   serial.c - Low level functions for sending and recieving bytes via the serial port
   Part of Grbl
-
   Copyright (c) 2011-2015 Sungeun K. Jeon
   Copyright (c) 2009-2011 Simen Svale Skogsrud
-
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-
   Grbl is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
   You should have received a copy of the GNU General Public License
   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -30,11 +26,6 @@ uint8_t serial_tx_buffer[TX_BUFFER_SIZE];
 uint8_t serial_tx_buffer_head = 0;
 volatile uint8_t serial_tx_buffer_tail = 0;
 
-
-#ifdef ENABLE_XONXOFF
-  volatile uint8_t flow_ctrl = XON_SENT; // Flow control state variable
-#endif
-  
 
 // Returns the number of bytes used in the RX serial buffer.
 uint8_t serial_get_rx_buffer_count()
@@ -57,6 +48,7 @@ uint8_t serial_get_tx_buffer_count()
 
 void serial_init()
 {
+  /*
   // Set baud rate
   #if BAUD_RATE < 57600
     uint16_t UBRR0_value = ((F_CPU / (8L * BAUD_RATE)) - 1)/2 ;
@@ -74,8 +66,36 @@ void serial_init()
 	
   // enable interrupt on complete reception of a byte
   UCSR0B |= 1<<RXCIE0;
-	  
+  */
   // defaults to 8-bit, no parity, 1 stop bit
+  //UARTClass Serial(UART, UART_IRQn, ID_UART, &rx_buffer1, &tx_buffer1);  
+  
+  // Configure PMC
+  pmc_enable_periph_clk( ID_UART );
+  
+  // Disable PDC channel
+  UART->UART_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
+
+  // Reset and disable receiver and transmitter
+  UART->UART_CR = UART_CR_RSTRX | UART_CR_RSTTX | UART_CR_RXDIS | UART_CR_TXDIS;
+
+  // Configure mode
+  UART->UART_MR = ((US_MR_CHRL_8_BIT | US_MR_NBSTOP_1_BIT | UART_MR_PAR_NO) & 0x00000E00) | UART_MR_CHMODE_NORMAL;
+
+  // Configure baudrate (asynchronous, no oversampling)
+  UART->UART_BRGR = (SystemCoreClock / BAUD_RATE) >> 4;
+
+  // Configure interrupts
+  UART->UART_IDR = 0xFFFFFFFF;
+  UART->UART_IER = UART_IER_RXRDY | UART_IER_OVRE | UART_IER_FRAME;
+
+  // Enable UART interrupt in NVIC
+  NVIC_SetPriority(UART_IRQn, 2);
+  NVIC_EnableIRQ(UART_IRQn);
+
+  // Enable receiver and transmitter
+  UART->UART_CR = UART_CR_RXEN | UART_CR_TXEN;  
+  
 }
 
 
@@ -97,38 +117,11 @@ void serial_write(uint8_t data) {
   serial_tx_buffer_head = next_head;
   
   // Enable Data Register Empty Interrupt to make sure tx-streaming is running
-  UCSR0B |=  (1 << UDRIE0); 
+  //UCSR0B |=  (1 << UDRIE0); 
+  UART->UART_IER = UART_IER_TXRDY;
 }
 
 
-// Data Register Empty Interrupt handler
-ISR(SERIAL_UDRE)
-{
-  uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
-  
-  #ifdef ENABLE_XONXOFF
-    if (flow_ctrl == SEND_XOFF) { 
-      UDR0 = XOFF_CHAR; 
-      flow_ctrl = XOFF_SENT; 
-    } else if (flow_ctrl == SEND_XON) { 
-      UDR0 = XON_CHAR; 
-      flow_ctrl = XON_SENT; 
-    } else
-  #endif
-  { 
-    // Send a byte from the buffer	
-    UDR0 = serial_tx_buffer[tail];
-  
-    // Update tail position
-    tail++;
-    if (tail == TX_BUFFER_SIZE) { tail = 0; }
-  
-    serial_tx_buffer_tail = tail;
-  }
-  
-  // Turn off Data Register Empty Interrupt to stop tx-streaming if this concludes the transfer
-  if (tail == serial_tx_buffer_head) { UCSR0B &= ~(1 << UDRIE0); }
-}
 
 
 // Fetches the first byte in the serial read buffer. Called by main program.
@@ -156,46 +149,82 @@ uint8_t serial_read()
 }
 
 
-ISR(SERIAL_RX)
-{
-  uint8_t data = UDR0;
-  uint8_t next_head;
-  
-  // Pick off realtime command characters directly from the serial stream. These characters are
-  // not passed into the buffer, but these set system state flag bits for realtime execution.
-  switch (data) {
-    case CMD_STATUS_REPORT: system_set_exec_state_flag(EXEC_STATUS_REPORT); break; // Set as true
-    case CMD_CYCLE_START:   system_set_exec_state_flag(EXEC_CYCLE_START); break; // Set as true
-    case CMD_FEED_HOLD:     system_set_exec_state_flag(EXEC_FEED_HOLD); break; // Set as true
-    case CMD_SAFETY_DOOR:   system_set_exec_state_flag(EXEC_SAFETY_DOOR); break; // Set as true
-    case CMD_RESET:         mc_reset(); break; // Call motion control reset routine.
-    default: // Write character to buffer    
-      next_head = serial_rx_buffer_head + 1;
-      if (next_head == RX_BUFFER_SIZE) { next_head = 0; }
-    
-      // Write data to buffer unless it is full.
-      if (next_head != serial_rx_buffer_tail) {
-        serial_rx_buffer[serial_rx_buffer_head] = data;
-        serial_rx_buffer_head = next_head;    
-        
-        #ifdef ENABLE_XONXOFF
-          if ((serial_get_rx_buffer_count() >= RX_BUFFER_FULL) && flow_ctrl == XON_SENT) {
-            flow_ctrl = SEND_XOFF;
-            UCSR0B |=  (1 << UDRIE0); // Force TX
-          } 
-        #endif
-        
-      }
-      //TODO: else alarm on overflow?
-  }
-}
-
 
 void serial_reset_read_buffer() 
 {
   serial_rx_buffer_tail = serial_rx_buffer_head;
-
-  #ifdef ENABLE_XONXOFF
-    flow_ctrl = XON_SENT;
-  #endif
 }
+
+
+
+
+
+// IT handlers
+void UART_Handler(void)
+{
+  uint32_t status = UART->UART_SR;
+
+  // Did we receive data?
+  if ((status & UART_SR_RXRDY) == UART_SR_RXRDY){
+    uint8_t data = UART->UART_RHR;
+    uint8_t next_head;
+    
+    // Pick off realtime command characters directly from the serial stream. These characters are
+    // not passed into the buffer, but these set system state flag bits for realtime execution.
+    switch (data) {
+      case CMD_STATUS_REPORT: system_set_exec_state_flag(EXEC_STATUS_REPORT); break; // Set as true
+      case CMD_CYCLE_START:   system_set_exec_state_flag(EXEC_CYCLE_START); break; // Set as true
+      case CMD_FEED_HOLD:     system_set_exec_state_flag(EXEC_FEED_HOLD); break; // Set as true
+      case CMD_SAFETY_DOOR:   system_set_exec_state_flag(EXEC_SAFETY_DOOR); break; // Set as true
+      case CMD_RESET:         mc_reset(); break; // Call motion control reset routine.
+      default: // Write character to buffer    
+        next_head = serial_rx_buffer_head + 1;
+        if (next_head == RX_BUFFER_SIZE) { next_head = 0; }
+      
+        // Write data to buffer unless it is full.
+        if (next_head != serial_rx_buffer_tail) {
+          serial_rx_buffer[serial_rx_buffer_head] = data;
+          serial_rx_buffer_head = next_head;    
+                    
+        }
+        //TODO: else alarm on overflow?
+    }
+    
+  }
+
+  // Do we need to keep sending data?
+  if ((status & UART_SR_TXRDY) == UART_SR_TXRDY) 
+  {
+    if (serial_tx_buffer_tail == serial_tx_buffer_head) {
+      // Mask off transmit interrupt so we don't get it anymore
+      UART->UART_IDR = UART_IDR_TXRDY;
+    }
+    else
+    {
+      uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
+      
+      // Send a byte from the buffer	
+      UART->UART_THR = serial_tx_buffer[tail];
+    
+      // Update tail position
+      tail++;
+      if (tail == TX_BUFFER_SIZE) { tail = 0; }
+    
+      serial_tx_buffer_tail = tail;
+      
+      // Turn off Data Register Empty Interrupt to stop tx-streaming if this concludes the transfer
+      if (tail == serial_tx_buffer_head) {
+        // Mask off transmit interrupt so we don't get it anymore
+        UART->UART_IDR = UART_IDR_TXRDY;
+      }      
+    }
+  }
+
+  // Acknowledge errors
+  if ((status & UART_SR_OVRE) == UART_SR_OVRE || (status & UART_SR_FRAME) == UART_SR_FRAME)
+  {
+    // TODO: error reporting outside ISR
+    UART->UART_CR |= UART_CR_RSTSTA;
+  }
+}
+

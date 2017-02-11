@@ -436,4 +436,45 @@
   #define DEFAULT_HOMING_PULLOFF 1.0 // mm
 #endif
 
+#ifdef DEFAULTS_LASER
+  // Settings only for Grbl Simulator (www.github.com/grbl/grbl-sim)
+  // Grbl generic default settings. Should work across different machines.
+  #define DEFAULT_X_STEPS_PER_MM 106.67
+  #define DEFAULT_Y_STEPS_PER_MM 106.67
+  #define DEFAULT_Z_STEPS_PER_MM 55.945
+  #define DEFAULT_A_STEPS_PER_MM 100.000
+  #define DEFAULT_X_MAX_RATE 10000.000 // mm/min
+  #define DEFAULT_Y_MAX_RATE 15000.000 // mm/min
+  #define DEFAULT_Z_MAX_RATE 2000.000 // mm/min
+  #define DEFAULT_A_MAX_RATE 13000.000 // mm/min
+  #define DEFAULT_X_ACCELERATION (1000.000*60*60) // 10*60*60 mm/min^2 = 10 mm/sec^2
+  #define DEFAULT_Y_ACCELERATION (1000.000*60*60) // 10*60*60 mm/min^2 = 10 mm/sec^2
+  #define DEFAULT_Z_ACCELERATION (1000.000*60*60) // 10*60*60 mm/min^2 = 10 mm/sec^2
+  #define DEFAULT_A_ACCELERATION (1000.000*60*60) // 10*60*60 mm/min^2 = 10 mm/sec^2
+  #define DEFAULT_X_MAX_TRAVEL 300.0 // mm
+  #define DEFAULT_Y_MAX_TRAVEL 224.0 // mm
+  #define DEFAULT_Z_MAX_TRAVEL 50.0 // mm
+  #define DEFAULT_A_MAX_TRAVEL 1000000.0 // mm
+  #define DEFAULT_SPINDLE_RPM_MAX 1000.0 // rpm
+  #define DEFAULT_SPINDLE_RPM_MIN 0.0 // rpm
+  #define DEFAULT_STEP_PULSE_MICROSECONDS 10
+  #define DEFAULT_STEPPING_INVERT_MASK 0
+  #define DEFAULT_DIRECTION_INVERT_MASK 5
+  #define DEFAULT_STEPPER_IDLE_LOCK_TIME 255 // msec (0-254, 255 keeps steppers enabled)
+  #define DEFAULT_STATUS_REPORT_MASK 255 //((BITFLAG_RT_STATUS_MACHINE_POSITION)|(BITFLAG_RT_STATUS_WORK_POSITION))
+  #define DEFAULT_JUNCTION_DEVIATION 0.01 // mm
+  #define DEFAULT_ARC_TOLERANCE 0.002 // mm
+  #define DEFAULT_REPORT_INCHES 0 // false
+  #define DEFAULT_INVERT_ST_ENABLE 0 // false
+  #define DEFAULT_INVERT_LIMIT_PINS 1 // false
+  #define DEFAULT_SOFT_LIMIT_ENABLE 1 // false
+  #define DEFAULT_HARD_LIMIT_ENABLE 0  // false
+  #define DEFAULT_HOMING_ENABLE 1  // false
+  #define DEFAULT_HOMING_DIR_MASK 0 // move positive dir
+  #define DEFAULT_HOMING_FEED_RATE 100.0 // mm/min
+  #define DEFAULT_HOMING_SEEK_RATE 5000.0 // mm/min
+  #define DEFAULT_HOMING_DEBOUNCE_DELAY 250 // msec (0-65k)
+  #define DEFAULT_HOMING_PULLOFF 5.0 // mm
+#endif
+
 #endif

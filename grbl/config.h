@@ -34,7 +34,8 @@
 // NOTE: OEMs can avoid the need to maintain/update the defaults.h and cpu_map.h files and use only
 // one configuration file by placing their specific defaults and pin map at the bottom of this file.
 // If doing so, simply comment out these two defines and see instructions below.
-#define CPU_MAP_DUE_INITIAL
+#define CPU_MAP_DUE_INITIAL //Arduino arm lib 1.6.6
+#define DEFAULTS_LASER
 
 // Serial baud rate
 #define BAUD_RATE 115200

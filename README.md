@@ -4,6 +4,7 @@
 
 .) ADDED secound X AXIES for homing
 
+.) CHNAGE TO ARDUINO DUE for more speed 
 
 ![GitHub Logo](/doc/media/Grbl Logo 250px.png)
 

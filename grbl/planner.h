@@ -25,7 +25,7 @@
 
 // The number of linear motions that can be in the plan at any give time
 #ifndef BLOCK_BUFFER_SIZE
-  #define BLOCK_BUFFER_SIZE 36
+  #define BLOCK_BUFFER_SIZE 100
 #endif
 
 #define PLAN_OK true

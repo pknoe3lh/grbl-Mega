@@ -452,7 +452,7 @@
   #define DEFAULT_Z_ACCELERATION (1000.000*60*60) // 10*60*60 mm/min^2 = 10 mm/sec^2
   #define DEFAULT_A_ACCELERATION (1000.000*60*60) // 10*60*60 mm/min^2 = 10 mm/sec^2
   #define DEFAULT_X_MAX_TRAVEL 300.0 // mm
-  #define DEFAULT_Y_MAX_TRAVEL 210.0 // mm
+  #define DEFAULT_Y_MAX_TRAVEL 224.0 // mm
   #define DEFAULT_Z_MAX_TRAVEL 50.0 // mm
   #define DEFAULT_A_MAX_TRAVEL 1000000.0 // mm
   #define DEFAULT_SPINDLE_RPM_MAX 1000.0 // rpm

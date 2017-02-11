@@ -23,14 +23,17 @@
 
 void coolant_init()
 {
+/*
   COOLANT_FLOOD_DDR |= (1 << COOLANT_FLOOD_BIT); // Configure as output pin.
   COOLANT_MIST_DDR |= (1 << COOLANT_MIST_BIT); // Configure as output pin.
+*/
   coolant_stop();
 }
 
 
 uint8_t coolant_is_enabled()
 {
+  /*
   #ifdef INVERT_COOLANT_FLOOD_PIN
     if (!(COOLANT_FLOOD_PORT & (1<<COOLANT_FLOOD_BIT))) { return(true); }
   #else
@@ -41,12 +44,14 @@ uint8_t coolant_is_enabled()
   #else
     if (COOLANT_MIST_PORT & (1<<COOLANT_MIST_BIT)) { return(true); }
   #endif
+  */
   return(false); 
 }
 
 
 void coolant_stop()
 {
+/*
   #ifdef INVERT_COOLANT_FLOOD_PIN
     COOLANT_FLOOD_PORT |= (1 << COOLANT_FLOOD_BIT);
   #else
@@ -57,13 +62,14 @@ void coolant_stop()
   #else
     COOLANT_MIST_PORT &= ~(1 << COOLANT_MIST_BIT);
   #endif
+*/
 }
 
 
 void coolant_set_state(uint8_t mode)
 {
   if (sys.abort) { return; } // Block during abort.
-  
+ /* 
   if (mode == COOLANT_FLOOD_ENABLE) {
     #ifdef INVERT_COOLANT_FLOOD_PIN
       COOLANT_FLOOD_PORT &= ~(1 << COOLANT_FLOOD_BIT);
@@ -79,6 +85,7 @@ void coolant_set_state(uint8_t mode)
   } else {
     coolant_stop();
   }
+*/
 }
 
 

@@ -20,19 +20,31 @@
 
 #include "grbl.h"
 
+void pinchangeinterrupt();
 
 void system_init()
 {
-  CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
+  //CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
   #ifdef DISABLE_CONTROL_PIN_PULL_UP
-    CONTROL_PORT &= ~(CONTROL_MASK); // Normal low operation. Requires external pull-down.
+    //CONTROL_PORT &= ~(CONTROL_MASK); // Normal low operation. Requires external pull-down.
+    pinMode(CONTROL_RESET_BIT,INPUT);
+    pinMode(CONTROL_FEED_HOLD_BIT,INPUT);
+    pinMode(CONTROL_CYCLE_START_BIT,INPUT);
+    pinMode(CONTROL_SAFETY_DOOR_BIT,INPUT);
   #else
-    CONTROL_PORT |= CONTROL_MASK;   // Enable internal pull-up resistors. Normal high operation.
+    //CONTROL_PORT |= CONTROL_MASK;   // Enable internal pull-up resistors. Normal high operation.
+    pinMode(CONTROL_RESET_BIT,INPUT_PULLUP);
+    pinMode(CONTROL_FEED_HOLD_BIT,INPUT_PULLUP);
+    pinMode(CONTROL_CYCLE_START_BIT,INPUT_PULLUP);
+    pinMode(CONTROL_SAFETY_DOOR_BIT,INPUT_PULLUP);
   #endif
-  CONTROL_PCMSK |= CONTROL_MASK;  // Enable specific pins of the Pin Change Interrupt
-  PCICR |= (1 << CONTROL_INT);   // Enable Pin Change Interrupt
+  //CONTROL_PCMSK |= CONTROL_MASK;  // Enable specific pins of the Pin Change Interrupt
+  //PCICR |= (1 << CONTROL_INT);   // Enable Pin Change Interrupt
+  attachInterrupt(CONTROL_RESET_BIT, pinchangeinterrupt, CHANGE);
+  attachInterrupt(CONTROL_FEED_HOLD_BIT, pinchangeinterrupt, CHANGE);
+  attachInterrupt(CONTROL_CYCLE_START_BIT, pinchangeinterrupt, CHANGE);
+  attachInterrupt(CONTROL_SAFETY_DOOR_BIT, pinchangeinterrupt, CHANGE);  
 }
-
 
 // Returns control pin state as a uint8 bitfield. Each bit indicates the input pin state, where 
 // triggered is 1 and not triggered is 0. Invert mask is applied. Bitfield organization is
@@ -40,15 +52,19 @@ void system_init()
 uint8_t system_control_get_state()
 {
   uint8_t control_state = 0;
-  uint8_t pin = (CONTROL_PIN & CONTROL_MASK);
+  uint8_t pin = 0;
+  if(digitalRead(CONTROL_SAFETY_DOOR_BIT)==HIGH) pin|=(1<<0);
+  if(digitalRead(CONTROL_RESET_BIT)==HIGH) pin|=(1<<1);
+  if(digitalRead(CONTROL_FEED_HOLD_BIT)==HIGH) pin|=(1<<2);
+  if(digitalRead(CONTROL_CYCLE_START_BIT)==HIGH) pin|=(1<<3);
   #ifdef INVERT_CONTROL_PIN_MASK
     pin ^= INVERT_CONTROL_PIN_MASK;
   #endif
   if (pin) {
-    if (bit_isfalse(pin,(1<<CONTROL_SAFETY_DOOR_BIT))) { control_state |= CONTROL_PIN_INDEX_SAFETY_DOOR; }
-    if (bit_isfalse(pin,(1<<CONTROL_RESET_BIT))) { control_state |= CONTROL_PIN_INDEX_RESET; }
-    if (bit_isfalse(pin,(1<<CONTROL_FEED_HOLD_BIT))) { control_state |= CONTROL_PIN_INDEX_FEED_HOLD; }
-    if (bit_isfalse(pin,(1<<CONTROL_CYCLE_START_BIT))) { control_state |= CONTROL_PIN_INDEX_CYCLE_START; }
+    if (bit_isfalse(pin,(1<<0))) { control_state |= CONTROL_PIN_INDEX_SAFETY_DOOR; }
+    if (bit_isfalse(pin,(1<<1))) { control_state |= CONTROL_PIN_INDEX_RESET; }
+    if (bit_isfalse(pin,(1<<2))) { control_state |= CONTROL_PIN_INDEX_FEED_HOLD; }
+    if (bit_isfalse(pin,(1<<3))) { control_state |= CONTROL_PIN_INDEX_CYCLE_START; }
   }
   return(control_state);
 }
@@ -58,7 +74,7 @@ uint8_t system_control_get_state()
 // only the realtime command execute variable to have the main program execute these when 
 // its ready. This works exactly like the character-based realtime commands when picked off
 // directly from the incoming serial data stream.
-ISR(CONTROL_INT_vect) 
+void pinchangeinterrupt() 
 {
   uint8_t pin = system_control_get_state();
   if (pin) { 
@@ -286,29 +302,17 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps)
 
 // Special handlers for setting and clearing Grbl's real-time execution flags.
 void system_set_exec_state_flag(uint8_t mask) {
-  uint8_t sreg = SREG; 
-  cli(); 
   sys_rt_exec_state |= (mask);
-  SREG = sreg;
 }
 
 void system_clear_exec_state_flag(uint8_t mask) {
-  uint8_t sreg = SREG; 
-  cli(); 
   sys_rt_exec_state &= ~(mask);
-  SREG = sreg;
 }
 
 void system_set_exec_alarm_flag(uint8_t mask) {
-  uint8_t sreg = SREG; 
-  cli(); 
   sys_rt_exec_alarm |= (mask);
-  SREG = sreg;
 }
 
 void system_clear_exec_alarm_flag(uint8_t mask) {
-  uint8_t sreg = SREG; 
-  cli(); 
   sys_rt_exec_alarm &= ~(mask);
-  SREG = sreg;
 }

@@ -24,9 +24,9 @@
 
 // Declare system global variable structure
 system_t sys; 
-volatile uint8_t sys_probe_state;
-volatile uint8_t sys_rt_exec_state;
-volatile uint8_t sys_rt_exec_alarm;
+volatile uint32_t sys_probe_state;
+volatile uint32_t sys_rt_exec_state;
+volatile uint32_t sys_rt_exec_alarm;
 
 void setup() {
   // Initialize system upon power-up.

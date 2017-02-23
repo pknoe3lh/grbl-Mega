@@ -52,8 +52,8 @@ static st_block_t st_block_buffer[SEGMENT_BUFFER_SIZE-1];
 // planner buffer. Once "checked-out", the steps in the segments buffer cannot be modified by 
 // the planner, where the remaining planner block steps still can.
 typedef struct {
-  uint16_t n_step;          // Number of step events to be executed for this segment
-  uint8_t st_block_index;   // Stepper block data index. Uses this information to execute this segment.
+  uint32_t n_step;          // Number of step events to be executed for this segment
+  uint32_t st_block_index;   // Stepper block data index. Uses this information to execute this segment.
   uint32_t cycles_per_tick; // Step distance traveled per ISR tick, aka step rate.
 } segment_t;
 static segment_t segment_buffer[SEGMENT_BUFFER_SIZE];
@@ -63,29 +63,29 @@ typedef struct {
   // Used by the bresenham line algorithm
   uint32_t counter[N_AXIS];        // Counter variables for the bresenham line tracer
   
-  uint8_t execute_step;     // Flags step execution for each interrupt.
-  uint8_t step_pulse_time;  // Step pulse reset time after step rise
-  uint8_t step_outbits;         // The next stepping-bits to be output
-  uint8_t dir_outbits;
+  uint32_t execute_step;     // Flags step execution for each interrupt.
+  uint32_t step_pulse_time;  // Step pulse reset time after step rise
+  uint32_t step_outbits;         // The next stepping-bits to be output
+  uint32_t dir_outbits;
 
-  uint16_t step_count;       // Steps remaining in line segment motion  
-  uint8_t exec_block_index; // Tracks the current st_block index. Change indicates new block.
+  uint32_t step_count;       // Steps remaining in line segment motion  
+  uint32_t exec_block_index; // Tracks the current st_block index. Change indicates new block.
   st_block_t *exec_block;   // Pointer to the block data for the segment being executed
   segment_t *exec_segment;  // Pointer to the segment being executed
 } stepper_t;
 static stepper_t st;
 
 // Step segment ring buffer indices
-static volatile uint8_t segment_buffer_tail;
-static uint8_t segment_buffer_head;
-static uint8_t segment_next_head;
+static volatile uint32_t segment_buffer_tail;
+static uint32_t segment_buffer_head;
+static uint32_t segment_next_head;
 
 // Step and direction port invert masks. 
-static uint8_t step_port_invert_mask;
-static uint8_t dir_port_invert_mask;
+static uint32_t step_port_invert_mask;
+static uint32_t dir_port_invert_mask;
 
 // Used to avoid ISR nesting of the "Stepper Driver Interrupt". Should never occur though.
-static volatile uint8_t busy;   
+static volatile uint32_t busy;   
 
 // Pointers for the step segment being prepped from the planner buffer. Accessed only by the
 // main program. Pointers may be planning segments or planner blocks ahead of what being executed.
@@ -95,8 +95,8 @@ static st_block_t *st_prep_block;  // Pointer to the stepper block data being pr
 // Segment preparation data struct. Contains all the necessary information to compute new segments
 // based on the current executing planner block.
 typedef struct {
-  uint8_t st_block_index;  // Index of stepper common data block being prepped
-  uint8_t recalculate_flag;
+  uint32_t st_block_index;  // Index of stepper common data block being prepped
+  uint32_t recalculate_flag;
   
   float dt_remainder;
   float steps_remaining;
@@ -104,13 +104,13 @@ typedef struct {
   float req_mm_increment;
 
   #ifdef PARKING_ENABLE
-    uint8_t last_st_block_index;
+    uint32_t last_st_block_index;
     float last_steps_remaining;
     float last_step_per_mm;
     float last_dt_remainder;
   #endif
 
-  uint8_t ramp_type;      // Current segment ramp state
+  uint32_t ramp_type;      // Current segment ramp state
   float mm_complete;      // End of velocity profile from end of current planner block in (mm).
                           // NOTE: This value must coincide with a step(no mantissa) when converted.
   float current_speed;    // Current speed at the end of the segment buffer (mm/min)
@@ -161,7 +161,7 @@ static st_prep_t prep;
 */
 
 
-void set_DIR(uint8_t pattern){
+void set_DIR(uint32_t pattern){
   //digitalWrite(X_DIRECTION_BIT,(pattern&(1<<X_AXIS))?HIGH:LOW);
   if(pattern&(1<<X_AXIS)){ //D10
     PIOD->PIO_SODR=(1<<10);
@@ -192,7 +192,7 @@ void set_DIR(uint8_t pattern){
   }//*/
 }
 
-void set_STEP(uint8_t pattern){
+void set_STEP(uint32_t pattern){
   if(pattern&(1<<X_AXIS)){ //D1
     PIOD->PIO_SODR=(1<<1);
     //digitalWrite(X_STEP_BIT,HIGH);
@@ -250,8 +250,8 @@ void st_wake_up()
   
   //st.step_pulse_time = -(((50-2)*TICKS_PER_MICROSECOND) >> 3);
   //OCR0A = -(((50-settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3);
-  TC_SetRA(TC1, 1, ceil(((double)VARIANT_MCK/2.0)*settings.pulse_microseconds/(double)1000000));
-  TC_SetRC(TC1, 1, ceil(((double)VARIANT_MCK/2.0)*50/(double)1000000));
+  TC_SetRA(TC1, 1, ceil(((float)VARIANT_MCK/2.0)*(float)settings.pulse_microseconds/(float)1000000));
+  TC_SetRC(TC1, 1, ceil(((float)VARIANT_MCK/2.0)*50.0/(float)1000000));
 
   // Enable Stepper Driver Interrupt
   //TIMSK1 |= (1<<OCIE1A);
@@ -339,7 +339,7 @@ void st_go_idle()
 //ISR(TIMER1_COMPA_vect)
 void TC3_Handler(void)
 {          
-  uint8_t idx;
+  uint32_t idx;
   TC_GetStatus(TC1, 0);
   
   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt  
@@ -462,7 +462,7 @@ void TC4_Handler(void){
 // Generates the step and direction port invert masks used in the Stepper Interrupt Driver.
 void st_generate_step_dir_invert_masks()
 {  
-  uint8_t idx;
+  uint32_t idx;
   step_port_invert_mask = 0;
   dir_port_invert_mask = 0;
   for (idx=0; idx<N_AXIS; idx++) {
